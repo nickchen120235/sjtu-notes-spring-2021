@@ -72,3 +72,29 @@
           consume product
         }
         ```
+
+## Inter Process Communication
+### Message Queue
+a buffer managed by system with specific message structure, for example in UNIX SYS V
+```c
+typedef struct msg_t {
+  long mtype;
+  char* buf;
+} msg_t;
+```
+related calls are `msgsnd()`, `msgrcv()`, `msgctl()`
+
+### Shared Memory
+a shared memory segment mapped to virtual memory address of different processes, uses procuder-consumer model
+
+related calls are `shmget()`, `shmctl()`, `shmdt()`
+
+### Pipe
+file-based, FIFO
+
+related calls are `mkfifo()`, `mknod()`
+
+### Software Interrupt & Signaling
+simulates hardware interrupt, can be passed to other processes
+
+related calls are `signal()`, `kill()`
