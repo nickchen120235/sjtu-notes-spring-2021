@@ -98,3 +98,58 @@ related calls are `mkfifo()`, `mknod()`
 simulates hardware interrupt, can be passed to other processes
 
 related calls are `signal()`, `kill()`
+
+## Deadlock
+### Conditions
+- mutual exclusion: only one process can access the resource at any time
+- hold and wait: a process is holding resources while waiting for additional resources held by others
+- no preemption: a resource can be released only voluntarily by the process holding it
+- circular wait: each process must be waiting for a resource which is being held by another process, which in turn is waiting for the first process to release the resource
+
+### Prevention
+- mutual exclusion: if exclusive access is needed, then deadlock will occur
+- hold and wait: requiring processes to request all needed resources before start up, or even requiring processes to request resources only if they have none. a process waiting for popular resources may die because of starvation
+- no preemption: preemption of a "locked out" resource generally implies a rollback, and is to be avoided since it is very costly in overhead.if a process holding some resources and requests for some another resource(s) that cannot be immediately allocated to it, the condition may be removed by releasing all the currently being held resources of that process
+- circular wait: disabling interrupts during critical sections and using a hierarchy to determine a partial ordering of resources
+
+### Correction
+> the target is to break the symmetry
+- process termination: abort/rollback one or more competing processes until the deadlock is resolved
+- resource preemption: resources allocated to various processes may be successively preempted and allocated to other processes until the deadlock is broken
+
+### Banker's Algorithm
+- important items
+  - MAX: how much of each resource each process could possibly request
+  - ALLOCATED: how much of each resource each process is currently holding
+  - AVAILABLE: how much of each resource the system currently has available
+- safe/unsafe state
+  - safe: all requested resources can be satisified in finite time
+  - unsafe: any requested resource cannot be satisified in finite time
+- algorithm: resources are allocated only if the system is safe
+- example
+```
+ total     AVAILABLE
+A B C D     A B C D
+6 5 7 6     3 1 1 2
+
+ALLOCATED       MAX
+   A B C D     A B C D
+P1 1 2 2 1  P1 3 3 2 2
+P2 1 0 3 3  P2 1 2 3 4
+P3 1 2 1 0  P3 1 3 5 0
+
+1. P1 needs additional 2 A, 1 B, 1 D
+  - AVAILABLE -> 1 0 1 1
+2. P1 terminates, returning all resources held by it
+  - AVAILABLE -> 4 3 3 3
+3. P2 acquires 2 B, 1 D
+  - AVAILABLE -> 4 1 3 2
+4. P2 terminates
+  - AVAILABLE -> 5 3 6 6
+5. P3 acquires 1 B, 4 C
+  - AVAILABLE -> 5 2 2 6
+6. P3 terminates
+  - AVAILABLE -> 6 5 7 6
+
+Because all processes were able to terminate, this state is safe.
+```
